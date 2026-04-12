@@ -43,6 +43,9 @@
       "billed_last_label": {
         "name": "Etiqueta da última fatura"
       },
+      "billed_total": {
+        "name": "Total faturado"
+      },
       "debt_total": {
         "name": "Valor total em dívida"
       },

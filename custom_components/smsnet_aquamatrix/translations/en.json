@@ -43,6 +43,9 @@
       "billed_last_label": {
         "name": "Last billed label"
       },
+      "billed_total": {
+        "name": "Total billed"
+      },
       "debt_total": {
         "name": "Total debt"
       },

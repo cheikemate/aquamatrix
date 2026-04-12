@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import datetime
 import logging
 import re
@@ -74,6 +75,14 @@ async def async_setup_entry(
             state_class=SensorStateClass.MEASUREMENT,
         ),
         SMSnetSensor(coordinator, entry, "billed_last_label", unit=None),
+        SMSnetSensor(
+            coordinator,
+            entry,
+            "billed_total",
+            unit="EUR",
+            device_class=SensorDeviceClass.MONETARY,
+            state_class=SensorStateClass.TOTAL_INCREASING,
+        ),
         SMSnetSensor(
             coordinator,
             entry,
@@ -173,9 +182,15 @@ class SMSnetSensor(CoordinatorEntity[SMSNetCoordinator], SensorEntity):
             except (ValueError, TypeError):
                 return None
 
-        if self._key in ("billed_last_value", "billed_last_label"):
+        if self._key in ("billed_last_value", "billed_last_label", "billed_total"):
             if not isinstance(billed, list) or not billed:
                 return None
+            if self._key == "billed_total":
+                total = 0.0
+                for item in billed:
+                    with contextlib.suppress(ValueError, TypeError):
+                        total += float(str(item.get("Value", 0)).replace(",", "."))
+                return total
             last_item = billed[-1]
             if self._key == "billed_last_label":
                 return last_item.get("Label", "")
