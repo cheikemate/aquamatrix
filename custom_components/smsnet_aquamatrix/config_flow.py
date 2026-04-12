@@ -80,7 +80,7 @@ class SMSNetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(
-        config_entry: config_entries.ConfigEntry,
+        _config_entry: config_entries.ConfigEntry,
     ) -> SMSNetOptionsFlowHandler:
         """Get the options flow for this handler."""
         return SMSNetOptionsFlowHandler()
