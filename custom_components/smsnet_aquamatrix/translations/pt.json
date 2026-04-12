@@ -1,0 +1,54 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "AQUAmatrix SMSnet",
+        "description": "Insira as suas credenciais do portal AQUAmatrix.",
+        "data": {
+          "tenant": "Tenant (ex: SMSnet)",
+          "username": "Utilizador",
+          "password": "Palavra-passe"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Falha ao ligar ao portal AQUAmatrix.",
+      "invalid_auth": "Credenciais de autenticação inválidas.",
+      "unknown": "Ocorreu um erro inesperado."
+    },
+    "abort": {
+      "already_configured": "Esta conta já está configurada."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "last_reading_value": {
+        "name": "Última leitura"
+      },
+      "last_reading_date": {
+        "name": "Data da última leitura"
+      },
+      "consumption_current_month": {
+        "name": "Consumo do mês atual"
+      },
+      "consumption_previous_month": {
+        "name": "Consumo do mês anterior"
+      },
+      "consumption_current_month_label": {
+        "name": "Etiqueta do consumo atual"
+      },
+      "billed_last_value": {
+        "name": "Último valor faturado"
+      },
+      "billed_last_label": {
+        "name": "Etiqueta da última fatura"
+      },
+      "debt_total": {
+        "name": "Valor total em dívida"
+      },
+      "next_due_date": {
+        "name": "Próxima data limite"
+      }
+    }
+  }
+}

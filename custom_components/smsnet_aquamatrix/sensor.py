@@ -35,40 +35,40 @@ async def async_setup_entry(
     entities = [
         # Compatível com Energy (contador cumulativo)
         SMSnetSensor(
-            coordinator, entry, tenant, "last_reading_value", "Água - Última leitura (m³)",
+            coordinator, entry, tenant, "last_reading_value",
             unit="m³", device_class=SensorDeviceClass.WATER, state_class=SensorStateClass.TOTAL_INCREASING
         ),
-        SMSnetSensor(coordinator, entry, tenant, "last_reading_date", "Água - Data última leitura", unit=None, device_class=SensorDeviceClass.DATE),
+        SMSnetSensor(coordinator, entry, tenant, "last_reading_date", unit=None, device_class=SensorDeviceClass.DATE),
 
         # Consumos mensais (medição)
         SMSnetSensor(
-            coordinator, entry, tenant, "consumption_current_month", "Água - Consumo mês atual (m³)",
+            coordinator, entry, tenant, "consumption_current_month",
             unit="m³", device_class=SensorDeviceClass.WATER, state_class=SensorStateClass.TOTAL
         ),
         SMSnetSensor(
-            coordinator, entry, tenant, "consumption_previous_month", "Água - Consumo mês anterior (m³)",
+            coordinator, entry, tenant, "consumption_previous_month",
             unit="m³", device_class=SensorDeviceClass.WATER, state_class=SensorStateClass.TOTAL
         ),
-        SMSnetSensor(coordinator, entry, tenant, "consumption_current_month_label", "Água - Consumo mês atual (label)", unit=None),
+        SMSnetSensor(coordinator, entry, tenant, "consumption_current_month_label", unit=None),
 
         # Faturação / dívida
         SMSnetSensor(
-            coordinator, entry, tenant, "billed_last_value", "Água - Último valor faturado (€)",
+            coordinator, entry, tenant, "billed_last_value",
             unit="€", state_class=SensorStateClass.MEASUREMENT
         ),
-        SMSnetSensor(coordinator, entry, tenant, "billed_last_label", "Água - Fatura último mês (label)", unit=None),
+        SMSnetSensor(coordinator, entry, tenant, "billed_last_label", unit=None),
         SMSnetSensor(
-            coordinator, entry, tenant, "debt_total", "Água - Valor em dívida (€)",
+            coordinator, entry, tenant, "debt_total",
             unit="€", state_class=SensorStateClass.MEASUREMENT
         ),
-        SMSnetSensor(coordinator, entry, tenant, "next_due_date", "Água - Próxima data limite", unit=None, device_class=SensorDeviceClass.DATE),
+        SMSnetSensor(coordinator, entry, tenant, "next_due_date", unit=None, device_class=SensorDeviceClass.DATE),
     ]
     async_add_entities(entities)
 
 class SMSnetSensor(CoordinatorEntity[SMSNetCoordinator], SensorEntity):
     """AQUAmatrix SMSnet Sensor."""
 
-    _attr_has_entity_name = False
+    _attr_has_entity_name = True
 
     def __init__(
         self,
@@ -76,7 +76,6 @@ class SMSnetSensor(CoordinatorEntity[SMSNetCoordinator], SensorEntity):
         entry: ConfigEntry,
         tenant: str,
         key: str,
-        name: str,
         unit: str | None,
         device_class: SensorDeviceClass | None = None,
         state_class: SensorStateClass | None = None
@@ -84,7 +83,7 @@ class SMSnetSensor(CoordinatorEntity[SMSNetCoordinator], SensorEntity):
         """Initialize the sensor."""
         super().__init__(coordinator)
         self._key = key
-        self._attr_name = name
+        self._attr_translation_key = key
         self._attr_unique_id = f"{entry.entry_id}_{key}"
         self._attr_native_unit_of_measurement = unit
         if device_class:
