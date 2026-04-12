@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: tag
+        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+      - name: Update manifest version
+        run: |
+          sed -i 's/"version": ".*"/"version": "${{ steps.tag.outputs.version }}"/' \
+            custom_components/smsnet_aquamatrix/manifest.json
+
+      - name: Create zip
+        run: |
+          cd custom_components
+          zip -r ../smsnet_aquamatrix.zip smsnet_aquamatrix/
+
+      - name: Upload release asset
+        run: gh release upload ${{ github.event.release.tag_name }} smsnet_aquamatrix.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
