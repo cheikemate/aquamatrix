@@ -30,6 +30,15 @@ A Home Assistant integration to fetch water meter readings and billing informati
    - **Username:** Your portal username.
    - **Password:** Your portal password.
 
+## Energy Dashboard
+
+Go to **Settings → Energy → Water → Add water source**.
+
+| Field | Value |
+|---|---|
+| Water consumption | `Last reading` |
+| Use an entity tracking the total costs | `Total billed` |
+
 ## Troubleshooting
 If you experience issues connecting, please ensure your credentials are correct and that you can log in manually to the AQUAmatrix portal.
 
