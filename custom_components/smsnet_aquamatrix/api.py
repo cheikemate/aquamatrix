@@ -1,11 +1,15 @@
 """AQUAmatrix SMSnet API Client."""
+
 from __future__ import annotations
-import re
+
 import json
 import logging
-from typing import Any, Dict, Optional, List, Tuple
+import re
+from typing import Any
 from urllib.parse import urljoin
-from aiohttp import ClientSession, ClientResponse
+
+from aiohttp import ClientResponse, ClientSession
+
 
 class SMSNetClient:
     """Client for AQUAmatrix SMSnet web portal."""
@@ -17,7 +21,7 @@ class SMSNetClient:
         tenant: str,
         username: str,
         password: str,
-        logger: logging.Logger
+        logger: logging.Logger,
     ) -> None:
         """Initialize the API client."""
         self._session = session
@@ -26,13 +30,13 @@ class SMSNetClient:
         self._username = username
         self._password = password
         self._logger = logger
-        self._rvt: Optional[str] = None
+        self._rvt: str | None = None
 
     def _url(self, path: str) -> str:
         """Construct a full URL for the given path."""
         return f"{self._base}/{self._tenant}/{path.lstrip('/')}"
 
-    async def _fetch(self, method: str, url: str, **kwargs: Any) -> Tuple[ClientResponse, str]:
+    async def _fetch(self, method: str, url: str, **kwargs: Any) -> tuple[ClientResponse, str]:
         """Perform an HTTP request and return the response and body."""
         self._logger.debug("SMSNET %s %s", method, url)
         async with self._session.request(method, url, **kwargs) as resp:
@@ -40,7 +44,7 @@ class SMSNetClient:
             self._logger.debug("SMSNET %s %s -> %s head=%s", method, url, resp.status, text[:250])
             return resp, text
 
-    async def _get_login_page(self) -> Tuple[str, str]:
+    async def _get_login_page(self) -> tuple[str, str]:
         """Retrieve the login page and its URL."""
         login_url = self._url("Account/Login")
         headers = {"User-Agent": "HomeAssistant", "Accept-Language": "pt-PT,pt;q=0.9,en;q=0.8"}
@@ -49,9 +53,11 @@ class SMSNetClient:
             raise Exception(f"Login GET failed: {resp.status}")
         return login_url, text
 
-    def _parse_login_form(self, base_url: str, html: str) -> Tuple[str, Dict[str, str], str, str]:
+    def _parse_login_form(self, base_url: str, html: str) -> tuple[str, dict[str, str], str, str]:
         """Parse the login form to extract the action URL and fields."""
-        form_re = re.compile(r'<form[^>]*method=["\\\']?post["\\\']?[^>]*>(.*?)</form>', re.I | re.S)
+        form_re = re.compile(
+            r'<form[^>]*method=["\\\']?post["\\\']?[^>]*>(.*?)</form>', re.I | re.S
+        )
         mform = form_re.search(html)
         if not mform:
             raise Exception("Login form not found")
@@ -59,17 +65,17 @@ class SMSNetClient:
         action_m = re.search(r'action=["\\\']([^"\\\']*)["\\\']', form_html, re.I)
         action = action_m.group(1) if action_m else ""
         action_url = urljoin(base_url, action) if action else base_url
-        inputs = re.findall(r'<input[^>]*>', form_html, re.I)
-        data: Dict[str, str] = {}
-        username_candidates: List[str] = []
-        password_name: Optional[str] = None
+        inputs = re.findall(r"<input[^>]*>", form_html, re.I)
+        data: dict[str, str] = {}
+        username_candidates: list[str] = []
+        password_name: str | None = None
         for inp in inputs:
             name_m = re.search(r'name=["\\\']([^"\\\']+)["\\\']', inp, re.I)
             if not name_m:
                 continue
             name = name_m.group(1)
             type_m = re.search(r'type=["\\\']([^"\\\']+)["\\\']', inp, re.I)
-            itype = (type_m.group(1).lower() if type_m else "text")
+            itype = type_m.group(1).lower() if type_m else "text"
             val_m = re.search(r'value=["\\\']([^"\\\']*)["\\\']', inp, re.I)
             value = val_m.group(1) if val_m else ""
             if "__RequestVerificationToken" in name:
@@ -87,9 +93,14 @@ class SMSNetClient:
             password_name = "Password"
         data[user_field] = self._username
         data[password_name] = self._password
-        if "RememberMe" in (n for n in data.keys()) or "RememberMe" in html:
+        if "RememberMe" in (n for n in data) or "RememberMe" in html:
             data["RememberMe"] = "true"
-        self._logger.debug("SMSNET login form: action=%s user_field=%s pass_field=%s", action_url, user_field, password_name)
+        self._logger.debug(
+            "SMSNET login form: action=%s user_field=%s pass_field=%s",
+            action_url,
+            user_field,
+            password_name,
+        )
         return action_url, data, user_field, password_name
 
     async def login_basic(self) -> None:
@@ -100,9 +111,11 @@ class SMSNetClient:
             "Content-Type": "application/x-www-form-urlencoded",
             "Origin": self._base,
             "Referer": login_url,
-            "User-Agent": "HomeAssistant"
+            "User-Agent": "HomeAssistant",
         }
-        resp, text = await self._fetch("POST", action_url, data=data, headers=headers, allow_redirects=True)
+        resp, text = await self._fetch(
+            "POST", action_url, data=data, headers=headers, allow_redirects=True
+        )
         if resp.status >= 400:
             raise Exception(f"Login POST failed: {resp.status}")
         await self._refresh_page_token()
@@ -115,19 +128,29 @@ class SMSNetClient:
             "Content-Type": "application/x-www-form-urlencoded",
             "Origin": self._base,
             "Referer": login_url,
-            "User-Agent": "HomeAssistant"
+            "User-Agent": "HomeAssistant",
         }
-        resp, text = await self._fetch("POST", action_url, data=data, headers=headers, allow_redirects=True)
+        resp, text = await self._fetch(
+            "POST", action_url, data=data, headers=headers, allow_redirects=True
+        )
         if resp.status >= 400:
             raise Exception(f"Login POST failed: {resp.status}")
         await self._refresh_page_token()
         try:
-            await self._get_json_once("ReadingsAndConsumptions/GetLastReadingInfo", "ReadingsAndConsumptions", pair_tokens=False)
+            await self._get_json_once(
+                "ReadingsAndConsumptions/GetLastReadingInfo",
+                "ReadingsAndConsumptions",
+                pair_tokens=False,
+            )
         except Exception:
             await self._refresh_page_token()
-            await self._get_json_once("ReadingsAndConsumptions/GetLastReadingInfo", "ReadingsAndConsumptions", pair_tokens=True)
+            await self._get_json_once(
+                "ReadingsAndConsumptions/GetLastReadingInfo",
+                "ReadingsAndConsumptions",
+                pair_tokens=True,
+            )
 
-    def _extract_cookie_token(self) -> Optional[str]:
+    def _extract_cookie_token(self) -> str | None:
         """Extract the request verification token from cookies."""
         jar = self._session.cookie_jar
         for cookie in jar:
@@ -144,7 +167,7 @@ class SMSNetClient:
             self._rvt = m.group(1)
         return self._rvt or ""
 
-    def _ajax_headers(self, referer_path: str, pair_tokens: bool = False) -> Dict[str, str]:
+    def _ajax_headers(self, referer_path: str, pair_tokens: bool = False) -> dict[str, str]:
         """Prepare AJAX headers for API requests."""
         ref = self._url(referer_path)
         rvt = self._rvt or ""
@@ -152,7 +175,7 @@ class SMSNetClient:
             "X-Requested-With": "XMLHttpRequest",
             "Accept": "application/json, text/plain, */*",
             "Referer": ref,
-            "User-Agent": "HomeAssistant"
+            "User-Agent": "HomeAssistant",
         }
         if rvt:
             if pair_tokens:
@@ -193,9 +216,9 @@ class SMSNetClient:
                 await self.login()
                 return await self._get_json_once(path, referer_path, pair_tokens=True)
 
-    async def _try_paths(self, paths: List[str], referer_path: str) -> Any:
+    async def _try_paths(self, paths: list[str], referer_path: str) -> Any:
         """Try multiple paths sequentially until one succeeds."""
-        last_exc: Optional[Exception] = None
+        last_exc: Exception | None = None
         for p in paths:
             try:
                 return await self._get_json(p, referer_path)
@@ -206,11 +229,17 @@ class SMSNetClient:
 
     async def get_last_reading(self) -> Any:
         """Retrieve the last meter reading."""
-        return await self._try_paths(["ReadingsAndConsumptions/GetLastReadingInfo", "Readings/GetLastReadingInfo"], "ReadingsAndConsumptions")
+        return await self._try_paths(
+            ["ReadingsAndConsumptions/GetLastReadingInfo", "Readings/GetLastReadingInfo"],
+            "ReadingsAndConsumptions",
+        )
 
     async def get_consumptions_graph(self) -> Any:
         """Retrieve the consumption graph data."""
-        return await self._try_paths(["ReadingsAndConsumptions/GetConsumptionsGraph", "Readings/GetConsumptionsGraph"], "ReadingsAndConsumptions")
+        return await self._try_paths(
+            ["ReadingsAndConsumptions/GetConsumptionsGraph", "Readings/GetConsumptionsGraph"],
+            "ReadingsAndConsumptions",
+        )
 
     async def get_billed_graph(self) -> Any:
         """Retrieve the billing graph data."""

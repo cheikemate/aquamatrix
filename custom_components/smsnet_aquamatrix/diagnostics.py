@@ -1,19 +1,21 @@
 """Diagnostics support for AQUAmatrix SMSnet."""
+
 from __future__ import annotations
 
-from typing import Any, Dict
+from typing import Any
 
+from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.components.diagnostics import async_redact_data
 
-from .const import DOMAIN, CONF_PASSWORD, CONF_USERNAME
+from .const import CONF_PASSWORD, CONF_USERNAME, DOMAIN
 
 TO_REDACT = {CONF_PASSWORD, CONF_USERNAME}
 
+
 async def async_get_config_entry_diagnostics(
     hass: HomeAssistant, entry: ConfigEntry
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Return diagnostics for a config entry."""
     coordinator = hass.data[DOMAIN][entry.entry_id]["coordinator"]
 

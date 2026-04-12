@@ -1,14 +1,14 @@
 """Config flow for AQUAmatrix SMSnet integration."""
+
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional
+from typing import Any
 
 import voluptuous as vol
-
 from homeassistant import config_entries
+from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import SMSNetClient
@@ -24,7 +24,8 @@ DATA_SCHEMA = vol.Schema(
     }
 )
 
-async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str, Any]:
+
+async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
     """Validate the user input allows us to connect.
 
     Data has the keys from DATA_SCHEMA with values provided by the user.
@@ -48,16 +49,15 @@ async def validate_input(hass: HomeAssistant, data: Dict[str, Any]) -> Dict[str,
 
     return {"title": f"AQUAmatrix ({tenant})", "tenant": tenant}
 
+
 class SMSNetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Handle a config flow for AQUAmatrix SMSnet."""
 
     VERSION = 1
 
-    async def async_step_user(
-        self, user_input: Optional[Dict[str, Any]] = None
-    ) -> FlowResult:
+    async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Handle the initial step."""
-        errors: Dict[str, str] = {}
+        errors: dict[str, str] = {}
         if user_input is not None:
             try:
                 info = await validate_input(self.hass, user_input)
@@ -67,11 +67,9 @@ class SMSNetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             except Exception:  # pylint: disable=broad-except
                 errors["base"] = "cannot_connect"
 
-        return self.async_show_form(
-            step_id="user", data_schema=DATA_SCHEMA, errors=errors
-        )
+        return self.async_show_form(step_id="user", data_schema=DATA_SCHEMA, errors=errors)
 
-    async def async_step_import(self, import_data: Dict[str, Any]) -> FlowResult:
+    async def async_step_import(self, import_data: dict[str, Any]) -> ConfigFlowResult:
         """Handle import from YAML."""
         tenant = import_data.get(CONF_TENANT, "SMSnet").strip("/")
         username = import_data.get(CONF_USERNAME, "")
@@ -85,18 +83,13 @@ class SMSNetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         config_entry: config_entries.ConfigEntry,
     ) -> SMSNetOptionsFlowHandler:
         """Get the options flow for this handler."""
-        return SMSNetOptionsFlowHandler(config_entry)
+        return SMSNetOptionsFlowHandler()
+
 
 class SMSNetOptionsFlowHandler(config_entries.OptionsFlow):
     """Handle AQUAmatrix SMSnet options."""
 
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        """Initialize options flow."""
-        self.config_entry = config_entry
-
-    async def async_step_init(
-        self, user_input: Optional[Dict[str, Any]] = None
-    ) -> FlowResult:
+    async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
             return self.async_create_entry(title="", data=user_input)

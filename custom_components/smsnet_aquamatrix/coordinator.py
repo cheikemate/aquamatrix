@@ -1,8 +1,10 @@
 """DataUpdateCoordinator for AQUAmatrix SMSnet."""
+
 from __future__ import annotations
+
 import logging
 from datetime import timedelta
-from typing import Any, Dict, List
+from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
@@ -11,28 +13,26 @@ from .api import SMSNetClient
 
 UPDATE_INTERVAL = timedelta(hours=6)
 
-class SMSNetCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
+
+class SMSNetCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     """Class to manage fetching AQUAmatrix data."""
 
     def __init__(
-        self,
-        hass: HomeAssistant,
-        client: SMSNetClient,
-        logger: logging.Logger | None = None
+        self, hass: HomeAssistant, client: SMSNetClient, logger: logging.Logger | None = None
     ) -> None:
         """Initialize the coordinator."""
         super().__init__(
             hass,
             logger=logger or logging.getLogger(__name__),
             name="SMSnet Coordinator",
-            update_interval=UPDATE_INTERVAL
+            update_interval=UPDATE_INTERVAL,
         )
         self.client = client
 
-    async def _async_update_data(self) -> Dict[str, Any]:
+    async def _async_update_data(self) -> dict[str, Any]:
         """Fetch data from AQUAmatrix."""
-        results: Dict[str, Any] = {}
-        errors: List[str] = []
+        results: dict[str, Any] = {}
+        errors: list[str] = []
 
         try:
             if not getattr(self.client, "_rvt", None):

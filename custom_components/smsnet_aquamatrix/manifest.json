@@ -1,11 +1,11 @@
 {
   "domain": "smsnet_aquamatrix",
   "name": "AQUAmatrix SMSnet",
-  "version": "1.0.0",
-  "documentation": "https://github.com/your-username/aquamatrix",
-  "issue_tracker": "https://github.com/your-username/aquamatrix/issues",
-  "requirements": [],
-  "codeowners": ["@you"],
+  "codeowners": ["@quinzico"],
+  "config_flow": true,
+  "documentation": "https://github.com/quinzico/aquamatrix",
   "iot_class": "cloud_polling",
-  "config_flow": true
+  "issue_tracker": "https://github.com/quinzico/aquamatrix/issues",
+  "requirements": [],
+  "version": "1.0.0"
 }

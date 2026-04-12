@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 DOMAIN = "smsnet_aquamatrix"
 DEFAULT_BASE_URL = "https://www.aquamatrix.pt"
 CONF_TENANT = "tenant"

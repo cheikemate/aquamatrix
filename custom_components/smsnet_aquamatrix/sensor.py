@@ -1,4 +1,5 @@
 """Sensor platform for AQUAmatrix SMSnet."""
+
 from __future__ import annotations
 
 import datetime
@@ -22,6 +23,7 @@ from .coordinator import SMSNetCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
+
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -30,40 +32,60 @@ async def async_setup_entry(
     """Set up the sensor platform."""
     data = hass.data[DOMAIN][entry.entry_id]
     coordinator: SMSNetCoordinator = data["coordinator"]
-    tenant: str = entry.data["tenant"]
 
     entities = [
         # Compatível com Energy (contador cumulativo)
         SMSnetSensor(
-            coordinator, entry, tenant, "last_reading_value",
-            unit="m³", device_class=SensorDeviceClass.WATER, state_class=SensorStateClass.TOTAL_INCREASING
+            coordinator,
+            entry,
+            "last_reading_value",
+            unit="m³",
+            device_class=SensorDeviceClass.WATER,
+            state_class=SensorStateClass.TOTAL_INCREASING,
         ),
-        SMSnetSensor(coordinator, entry, tenant, "last_reading_date", unit=None, device_class=SensorDeviceClass.DATE),
-
+        SMSnetSensor(
+            coordinator, entry, "last_reading_date", unit=None, device_class=SensorDeviceClass.DATE
+        ),
         # Consumos mensais (medição)
         SMSnetSensor(
-            coordinator, entry, tenant, "consumption_current_month",
-            unit="m³", device_class=SensorDeviceClass.WATER, state_class=SensorStateClass.TOTAL
+            coordinator,
+            entry,
+            "consumption_current_month",
+            unit="m³",
+            device_class=SensorDeviceClass.WATER,
+            state_class=SensorStateClass.TOTAL,
         ),
         SMSnetSensor(
-            coordinator, entry, tenant, "consumption_previous_month",
-            unit="m³", device_class=SensorDeviceClass.WATER, state_class=SensorStateClass.TOTAL
+            coordinator,
+            entry,
+            "consumption_previous_month",
+            unit="m³",
+            device_class=SensorDeviceClass.WATER,
+            state_class=SensorStateClass.TOTAL,
         ),
-        SMSnetSensor(coordinator, entry, tenant, "consumption_current_month_label", unit=None),
-
+        SMSnetSensor(coordinator, entry, "consumption_current_month_label", unit=None),
         # Faturação / dívida
         SMSnetSensor(
-            coordinator, entry, tenant, "billed_last_value",
-            unit="€", state_class=SensorStateClass.MEASUREMENT
+            coordinator,
+            entry,
+            "billed_last_value",
+            unit="€",
+            state_class=SensorStateClass.MEASUREMENT,
         ),
-        SMSnetSensor(coordinator, entry, tenant, "billed_last_label", unit=None),
+        SMSnetSensor(coordinator, entry, "billed_last_label", unit=None),
         SMSnetSensor(
-            coordinator, entry, tenant, "debt_total",
-            unit="€", state_class=SensorStateClass.MEASUREMENT
+            coordinator,
+            entry,
+            "debt_total",
+            unit="€",
+            state_class=SensorStateClass.MEASUREMENT,
         ),
-        SMSnetSensor(coordinator, entry, tenant, "next_due_date", unit=None, device_class=SensorDeviceClass.DATE),
+        SMSnetSensor(
+            coordinator, entry, "next_due_date", unit=None, device_class=SensorDeviceClass.DATE
+        ),
     ]
     async_add_entities(entities)
+
 
 class SMSnetSensor(CoordinatorEntity[SMSNetCoordinator], SensorEntity):
     """AQUAmatrix SMSnet Sensor."""
@@ -74,11 +96,10 @@ class SMSnetSensor(CoordinatorEntity[SMSNetCoordinator], SensorEntity):
         self,
         coordinator: SMSNetCoordinator,
         entry: ConfigEntry,
-        tenant: str,
         key: str,
         unit: str | None,
         device_class: SensorDeviceClass | None = None,
-        state_class: SensorStateClass | None = None
+        state_class: SensorStateClass | None = None,
     ) -> None:
         """Initialize the sensor."""
         super().__init__(coordinator)
@@ -109,7 +130,7 @@ class SMSnetSensor(CoordinatorEntity[SMSNetCoordinator], SensorEntity):
         if self._key == "last_reading_value":
             v = last.get("Value") or last.get("LastReadingValue") or "0"
             try:
-                parsed_str = re.sub(r'\s', '', str(v)).replace(',', ".")
+                parsed_str = re.sub(r"\s", "", str(v)).replace(",", ".")
                 return float(parsed_str)
             except (ValueError, TypeError):
                 _LOGGER.error("Error parsing last reading value: %s", v)
@@ -125,8 +146,12 @@ class SMSnetSensor(CoordinatorEntity[SMSNetCoordinator], SensorEntity):
                 _LOGGER.error("Error parsing last reading date: %s", v)
                 return None
 
-        if self._key in ("consumption_current_month", "consumption_previous_month", "consumption_current_month_label"):
-            arr: List[Dict[str, Any]] = []
+        if self._key in (
+            "consumption_current_month",
+            "consumption_previous_month",
+            "consumption_current_month_label",
+        ):
+            arr: list[dict[str, Any]] = []
             if isinstance(cons, dict) and "Values" in cons:
                 arr = cons.get("Values") or []
             elif isinstance(cons, list):
@@ -176,7 +201,12 @@ class SMSnetSensor(CoordinatorEntity[SMSNetCoordinator], SensorEntity):
 
         if self._key == "next_due_date":
             inv = billinfo.get("nextInvoice") or billinfo.get("proximaFatura") or {}
-            v = inv.get("limitDate") or inv.get("dataLimite") or billinfo.get("limitDate") or billinfo.get("dataLimite")
+            v = (
+                inv.get("limitDate")
+                or inv.get("dataLimite")
+                or billinfo.get("limitDate")
+                or billinfo.get("dataLimite")
+            )
             if not v:
                 return None
             try:
