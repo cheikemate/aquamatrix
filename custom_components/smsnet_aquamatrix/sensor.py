@@ -53,7 +53,7 @@ async def async_setup_entry(
             "consumption_current_month",
             unit="m³",
             device_class=SensorDeviceClass.WATER,
-            state_class=SensorStateClass.TOTAL,
+            state_class=SensorStateClass.MEASUREMENT,
         ),
         SMSnetSensor(
             coordinator,
@@ -61,7 +61,7 @@ async def async_setup_entry(
             "consumption_previous_month",
             unit="m³",
             device_class=SensorDeviceClass.WATER,
-            state_class=SensorStateClass.TOTAL,
+            state_class=SensorStateClass.MEASUREMENT,
         ),
         SMSnetSensor(coordinator, entry, "consumption_current_month_label", unit=None),
         # Faturação / dívida
@@ -69,7 +69,8 @@ async def async_setup_entry(
             coordinator,
             entry,
             "billed_last_value",
-            unit="€",
+            unit="EUR",
+            device_class=SensorDeviceClass.MONETARY,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         SMSnetSensor(coordinator, entry, "billed_last_label", unit=None),
@@ -77,7 +78,8 @@ async def async_setup_entry(
             coordinator,
             entry,
             "debt_total",
-            unit="€",
+            unit="EUR",
+            device_class=SensorDeviceClass.MONETARY,
             state_class=SensorStateClass.MEASUREMENT,
         ),
         SMSnetSensor(
