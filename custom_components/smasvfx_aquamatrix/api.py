@@ -89,7 +89,6 @@ class SMASVFXClient:
                 continue
             username_candidates.append(name)
         
-        # Explicitly enforce UserCode for SMASVFX if candidate exists or fallback to Email
         user_field = "UserCode" if "UserCode" in username_candidates else (username_candidates[0] if username_candidates else "Email")
         if password_name is None:
             password_name = "Password"
@@ -108,7 +107,7 @@ class SMASVFXClient:
         return action_url, data, user_field, password_name
 
     async def login(self) -> str:
-        """Perform login. Returns 'success' or 'mfa_required'."""
+        """Perform login and trigger email MFA code."""
         login_url, html = await self._get_login_page()
         action_url, data, _, _ = self._parse_login_form(login_url, html)
         headers = {
@@ -124,26 +123,27 @@ class SMASVFXClient:
             raise Exception(f"Login POST failed: {resp.status}")
 
         final_url = str(resp.url)
-        
-        # Check if portal demands MFA code verification
-        if "VerifyCode" in final_url or "Código" in text or "VerifyCode" in text:
-            self._logger.info("SMASVFX MFA verification required. Email code sent.")
+        self._logger.debug("SMASVFX login final_url: %s", final_url)
+
+        if "VerifyCode" in final_url or "Código" in text or "Confirm" in text or "Verification" in text:
+            self._logger.info("SMASVFX MFA verification code triggered.")
             return "mfa_required"
 
-        await self._refresh_page_token()
-        return "success"
+        try:
+            await self._refresh_page_token()
+            return "success"
+        except Exception:
+            return "mfa_required"
 
     async def verify_mfa(self, code: str) -> bool:
         """Submit the email verification MFA code."""
         verify_url = self._url("Account/VerifyCode")
         headers = {"User-Agent": "HomeAssistant", "Accept-Language": "pt-PT,pt;q=0.9,en;q=0.8"}
+        
         resp, text = await self._fetch("GET", verify_url, headers=headers)
-        if resp.status >= 400:
-            raise Exception(f"VerifyCode GET failed: {resp.status}")
-
-        # Extract CSRF token from VerifyCode page
+        
         m = re.search(r'name="__RequestVerificationToken"[^>]*value="([^"]+)"', text, re.I)
-        token = m.group(1) if m else ""
+        token = m.group(1) if m else (self._rvt or "")
 
         payload = {
             "__RequestVerificationToken": token,
@@ -158,12 +158,18 @@ class SMASVFXClient:
         resp, text = await self._fetch(
             "POST", verify_url, data=payload, headers=post_headers, allow_redirects=True
         )
+        self._logger.debug("SMASVFX verify_mfa post status=%s final_url=%s", resp.status, resp.url)
+        
         if resp.status >= 400:
-            raise Exception(f"VerifyCode POST failed: {resp.status}")
+            return False
 
-        # Refresh token after successful MFA submission
-        await self._refresh_page_token()
-        return True
+        try:
+            await self._refresh_page_token()
+            return True
+        except Exception:
+            if "inválid" in text.lower() or "incorreto" in text.lower():
+                return False
+            return True
 
     def _extract_cookie_token(self) -> str | None:
         """Extract the request verification token from cookies."""
@@ -265,4 +271,6 @@ class SMASVFXClient:
     async def get_billing_info(self) -> Any:
         """Retrieve billing and debt information."""
         return await self._get_json("Billing/GetBillingInfo", "Home/Index")
+
+
 
