@@ -125,7 +125,7 @@ class SMASVFXSensor(CoordinatorEntity[SMASVFXCoordinator], SensorEntity):
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
             name="Portal AQUAmatrix",
-            manufacturer="Quinzico",
+            manufacturer="@cheikemate",
             model="SMASVFX",
         )
 
