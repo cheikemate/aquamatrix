@@ -1,4 +1,4 @@
-"""AQUAmatrix SMSnet API Client."""
+"""AQUAmatrix SMASVFX API Client."""
 
 from __future__ import annotations
 
@@ -11,8 +11,8 @@ from urllib.parse import urljoin
 from aiohttp import ClientResponse, ClientSession
 
 
-class SMSNetClient:
-    """Client for AQUAmatrix SMSnet web portal."""
+class SMASVFXClient:
+    """Client for AQUAmatrix SMASVFX web portal."""
 
     def __init__(
         self,
@@ -38,10 +38,10 @@ class SMSNetClient:
 
     async def _fetch(self, method: str, url: str, **kwargs: Any) -> tuple[ClientResponse, str]:
         """Perform an HTTP request and return the response and body."""
-        self._logger.debug("SMSNET %s %s", method, url)
+        self._logger.debug("SMASVFX %s %s", method, url)
         async with self._session.request(method, url, **kwargs) as resp:
             text = await resp.text()
-            self._logger.debug("SMSNET %s %s -> %s head=%s", method, url, resp.status, text[:250])
+            self._logger.debug("SMASVFX %s %s -> %s head=%s", method, url, resp.status, text[:250])
             return resp, text
 
     async def _get_login_page(self) -> tuple[str, str]:
@@ -96,7 +96,7 @@ class SMSNetClient:
         if "RememberMe" in (n for n in data) or "RememberMe" in html:
             data["RememberMe"] = "true"
         self._logger.debug(
-            "SMSNET login form: action=%s user_field=%s pass_field=%s",
+            "SMASVFX login form: action=%s user_field=%s pass_field=%s",
             action_url,
             user_field,
             password_name,
@@ -192,10 +192,10 @@ class SMSNetClient:
         """Perform a single JSON fetch attempt."""
         url = self._url(path)
         headers = self._ajax_headers(referer_path, pair_tokens=pair_tokens)
-        self._logger.debug("SMSNET GET %s (pair=%s)", url, pair_tokens)
+        self._logger.debug("SMASVFX GET %s (pair=%s)", url, pair_tokens)
         async with self._session.get(url, headers=headers) as resp:
             text = await resp.text()
-            self._logger.debug("SMSNET GET %s status=%s head=%s", path, resp.status, text[:200])
+            self._logger.debug("SMASVFX GET %s status=%s head=%s", path, resp.status, text[:200])
             if resp.status != 200:
                 raise Exception(f"GET {path} failed: {resp.status}; head={text[:200]}")
             try:
@@ -208,7 +208,7 @@ class SMSNetClient:
         try:
             return await self._get_json_once(path, referer_path, pair_tokens=False)
         except Exception as e1:
-            self._logger.debug("SMSNET first GET failed: %s", e1)
+            self._logger.debug("SMASVFX first GET failed: %s", e1)
             await self._refresh_page_token()
             try:
                 return await self._get_json_once(path, referer_path, pair_tokens=True)
@@ -224,7 +224,7 @@ class SMSNetClient:
                 return await self._get_json(p, referer_path)
             except Exception as e:
                 last_exc = e
-                self._logger.debug("SMSNET path failed %s -> %s", p, e)
+                self._logger.debug("SMASVFX path failed %s -> %s", p, e)
         raise last_exc or Exception("All paths failed")
 
     async def get_last_reading(self) -> Any:
