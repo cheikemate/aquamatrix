@@ -1,4 +1,4 @@
-"""AQUAmatrix SMASVFX API Client."""
+"""AQUAmatrix SMASVFX API Client with MFA Support."""
 
 from __future__ import annotations
 
@@ -88,13 +88,17 @@ class SMASVFXClient:
                 data[name] = value
                 continue
             username_candidates.append(name)
-        user_field = username_candidates[0] if username_candidates else "Email"
+        
+        # Explicitly enforce UserCode for SMASVFX if candidate exists or fallback to Email
+        user_field = "UserCode" if "UserCode" in username_candidates else (username_candidates[0] if username_candidates else "Email")
         if password_name is None:
             password_name = "Password"
+            
         data[user_field] = self._username
         data[password_name] = self._password
         if "RememberMe" in (n for n in data) or "RememberMe" in html:
             data["RememberMe"] = "true"
+            
         self._logger.debug(
             "SMASVFX login form: action=%s user_field=%s pass_field=%s",
             action_url,
@@ -103,8 +107,8 @@ class SMASVFXClient:
         )
         return action_url, data, user_field, password_name
 
-    async def login_basic(self) -> None:
-        """Perform a basic login."""
+    async def login(self) -> str:
+        """Perform login. Returns 'success' or 'mfa_required'."""
         login_url, html = await self._get_login_page()
         action_url, data, _, _ = self._parse_login_form(login_url, html)
         headers = {
@@ -118,37 +122,48 @@ class SMASVFXClient:
         )
         if resp.status >= 400:
             raise Exception(f"Login POST failed: {resp.status}")
-        await self._refresh_page_token()
 
-    async def login(self) -> None:
-        """Perform login and verify JSON access."""
-        login_url, html = await self._get_login_page()
-        action_url, data, _, _ = self._parse_login_form(login_url, html)
-        headers = {
+        final_url = str(resp.url)
+        
+        # Check if portal demands MFA code verification
+        if "VerifyCode" in final_url or "Código" in text or "VerifyCode" in text:
+            self._logger.info("SMASVFX MFA verification required. Email code sent.")
+            return "mfa_required"
+
+        await self._refresh_page_token()
+        return "success"
+
+    async def verify_mfa(self, code: str) -> bool:
+        """Submit the email verification MFA code."""
+        verify_url = self._url("Account/VerifyCode")
+        headers = {"User-Agent": "HomeAssistant", "Accept-Language": "pt-PT,pt;q=0.9,en;q=0.8"}
+        resp, text = await self._fetch("GET", verify_url, headers=headers)
+        if resp.status >= 400:
+            raise Exception(f"VerifyCode GET failed: {resp.status}")
+
+        # Extract CSRF token from VerifyCode page
+        m = re.search(r'name="__RequestVerificationToken"[^>]*value="([^"]+)"', text, re.I)
+        token = m.group(1) if m else ""
+
+        payload = {
+            "__RequestVerificationToken": token,
+            "Code": code,
+        }
+        post_headers = {
             "Content-Type": "application/x-www-form-urlencoded",
             "Origin": self._base,
-            "Referer": login_url,
+            "Referer": verify_url,
             "User-Agent": "HomeAssistant",
         }
         resp, text = await self._fetch(
-            "POST", action_url, data=data, headers=headers, allow_redirects=True
+            "POST", verify_url, data=payload, headers=post_headers, allow_redirects=True
         )
         if resp.status >= 400:
-            raise Exception(f"Login POST failed: {resp.status}")
+            raise Exception(f"VerifyCode POST failed: {resp.status}")
+
+        # Refresh token after successful MFA submission
         await self._refresh_page_token()
-        try:
-            await self._get_json_once(
-                "ReadingsAndConsumptions/GetLastReadingInfo",
-                "ReadingsAndConsumptions",
-                pair_tokens=False,
-            )
-        except Exception:
-            await self._refresh_page_token()
-            await self._get_json_once(
-                "ReadingsAndConsumptions/GetLastReadingInfo",
-                "ReadingsAndConsumptions",
-                pair_tokens=True,
-            )
+        return True
 
     def _extract_cookie_token(self) -> str | None:
         """Extract the request verification token from cookies."""
@@ -213,7 +228,9 @@ class SMASVFXClient:
             try:
                 return await self._get_json_once(path, referer_path, pair_tokens=True)
             except Exception:
-                await self.login()
+                login_result = await self.login()
+                if login_result == "mfa_required":
+                    raise Exception("MFA challenge triggered during runtime. Re-authentication requires a verification code.")
                 return await self._get_json_once(path, referer_path, pair_tokens=True)
 
     async def _try_paths(self, paths: list[str], referer_path: str) -> Any:
@@ -248,3 +265,4 @@ class SMASVFXClient:
     async def get_billing_info(self) -> Any:
         """Retrieve billing and debt information."""
         return await self._get_json("Billing/GetBillingInfo", "Home/Index")
+
