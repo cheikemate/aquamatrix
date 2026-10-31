@@ -1,10 +1,9 @@
 {
   "domain": "smasvfx_aquamatrix",
   "name": "AQUAmatrix SMASVFX",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "documentation": "https://github.com/cheikemate/aquamatrix",
   "issue_tracker": "https://github.com/cheikemate/aquamatrix/issues",
-  "icon": "mdi:water-pump",
   "requirements": [],
   "dependencies": [],
   "codeowners": ["@cheikemate"],
