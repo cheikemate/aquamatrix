@@ -1,4 +1,4 @@
-"""Sensor platform for AQUAmatrix SMSnet."""
+"""Sensor platform for AQUAmatrix SMASVFX."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import DOMAIN
-from .coordinator import SMSNetCoordinator
+from .coordinator import SMASVFXCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,11 +32,11 @@ async def async_setup_entry(
 ) -> None:
     """Set up the sensor platform."""
     data = hass.data[DOMAIN][entry.entry_id]
-    coordinator: SMSNetCoordinator = data["coordinator"]
+    coordinator: SMASVFXCoordinator = data["coordinator"]
 
     entities = [
         # Compatível com Energy (contador cumulativo)
-        SMSnetSensor(
+        SMASVFXSensor(
             coordinator,
             entry,
             "last_reading_value",
@@ -44,11 +44,11 @@ async def async_setup_entry(
             device_class=SensorDeviceClass.WATER,
             state_class=SensorStateClass.TOTAL_INCREASING,
         ),
-        SMSnetSensor(
+        SMASVFXSensor(
             coordinator, entry, "last_reading_date", unit=None, device_class=SensorDeviceClass.DATE
         ),
         # Consumos mensais (medição)
-        SMSnetSensor(
+        SMASVFXSensor(
             coordinator,
             entry,
             "consumption_current_month",
@@ -56,7 +56,7 @@ async def async_setup_entry(
             device_class=SensorDeviceClass.WATER,
             state_class=SensorStateClass.TOTAL,
         ),
-        SMSnetSensor(
+        SMASVFXSensor(
             coordinator,
             entry,
             "consumption_previous_month",
@@ -64,9 +64,9 @@ async def async_setup_entry(
             device_class=SensorDeviceClass.WATER,
             state_class=SensorStateClass.TOTAL,
         ),
-        SMSnetSensor(coordinator, entry, "consumption_current_month_label", unit=None),
+        SMASVFXSensor(coordinator, entry, "consumption_current_month_label", unit=None),
         # Faturação / dívida
-        SMSnetSensor(
+        SMASVFXSensor(
             coordinator,
             entry,
             "billed_last_value",
@@ -74,8 +74,8 @@ async def async_setup_entry(
             device_class=SensorDeviceClass.MONETARY,
             state_class=SensorStateClass.TOTAL,
         ),
-        SMSnetSensor(coordinator, entry, "billed_last_label", unit=None),
-        SMSnetSensor(
+        SMASVFXSensor(coordinator, entry, "billed_last_label", unit=None),
+        SMASVFXSensor(
             coordinator,
             entry,
             "billed_total",
@@ -83,7 +83,7 @@ async def async_setup_entry(
             device_class=SensorDeviceClass.MONETARY,
             state_class=SensorStateClass.TOTAL,
         ),
-        SMSnetSensor(
+        SMASVFXSensor(
             coordinator,
             entry,
             "debt_total",
@@ -91,21 +91,21 @@ async def async_setup_entry(
             device_class=SensorDeviceClass.MONETARY,
             state_class=SensorStateClass.TOTAL,
         ),
-        SMSnetSensor(
+        SMASVFXSensor(
             coordinator, entry, "next_due_date", unit=None, device_class=SensorDeviceClass.DATE
         ),
     ]
     async_add_entities(entities)
 
 
-class SMSnetSensor(CoordinatorEntity[SMSNetCoordinator], SensorEntity):
-    """AQUAmatrix SMSnet Sensor."""
+class SMASVFXSensor(CoordinatorEntity[SMASVFXCoordinator], SensorEntity):
+    """AQUAmatrix SMASVFX Sensor."""
 
     _attr_has_entity_name = True
 
     def __init__(
         self,
-        coordinator: SMSNetCoordinator,
+        coordinator: SMASVFXCoordinator,
         entry: ConfigEntry,
         key: str,
         unit: str | None,
@@ -126,7 +126,7 @@ class SMSnetSensor(CoordinatorEntity[SMSNetCoordinator], SensorEntity):
             identifiers={(DOMAIN, entry.entry_id)},
             name="Portal AQUAmatrix",
             manufacturer="Quinzico",
-            model="SMSnet",
+            model="SMASVFX",
         )
 
     @property
