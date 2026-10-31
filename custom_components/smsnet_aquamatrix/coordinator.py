@@ -1,4 +1,4 @@
-"""DataUpdateCoordinator for AQUAmatrix SMSnet."""
+"""DataUpdateCoordinator for AQUAmatrix SMASVFX."""
 
 from __future__ import annotations
 
@@ -9,22 +9,22 @@ from typing import Any
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .api import SMSNetClient
+from .api import SMASVFXClient
 
 UPDATE_INTERVAL = timedelta(hours=6)
 
 
-class SMSNetCoordinator(DataUpdateCoordinator[dict[str, Any]]):
+class SMASVFXCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     """Class to manage fetching AQUAmatrix data."""
 
     def __init__(
-        self, hass: HomeAssistant, client: SMSNetClient, logger: logging.Logger | None = None
+        self, hass: HomeAssistant, client: SMASVFXClient, logger: logging.Logger | None = None
     ) -> None:
         """Initialize the coordinator."""
         super().__init__(
             hass,
             logger=logger or logging.getLogger(__name__),
-            name="SMSnet Coordinator",
+            name="SMASVFX Coordinator",
             update_interval=UPDATE_INTERVAL,
         )
         self.client = client
@@ -53,7 +53,7 @@ class SMSNetCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         await get_safe("billing_info", self.client.get_billing_info())
 
         if results:
-            self.logger.debug("SMSNET update ok keys=%s errors=%s", list(results.keys()), errors)
+            self.logger.debug("SMASVFX update ok keys=%s errors=%s", list(results.keys()), errors)
             return results
 
         raise UpdateFailed("; ".join(errors) if errors else "No data")
