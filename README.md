@@ -1,7 +1,7 @@
-# AQUAmatrix SMSnet Integration
+# AQUAmatrix SMASVFX Integration
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-[![Hassfest](https://github.com/quinzico/aquamatrix/actions/workflows/ci.yaml/badge.svg)](https://github.com/quinzico/aquamatrix/actions/workflows/ci.yaml)
+[![Hassfest](https://github.com/cheikemate/aquamatrix/actions/workflows/ci.yaml/badge.svg)](https://github.com/quinzico/aquamatrix/actions/workflows/ci.yaml)
 
 A Home Assistant integration to fetch water meter readings and billing information from the AQUAmatrix SMSnet portal.
 
