@@ -18,7 +18,7 @@ _LOGGER = logging.getLogger(__name__)
 
 DATA_SCHEMA = vol.Schema(
     {
-        vol.Required(CONF_TENANT, default="SMSnet"): str,
+        vol.Required(CONF_TENANT, default="SMASVFX"): str,
         vol.Required(CONF_USERNAME): str,
         vol.Required(CONF_PASSWORD): str,
     }
