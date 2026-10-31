@@ -1,4 +1,4 @@
-"""Diagnostics support for AQUAmatrix SMSnet."""
+"""Diagnostics support for AQUAmatrix SMASVFX."""
 
 from __future__ import annotations
 
