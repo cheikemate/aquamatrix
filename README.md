@@ -3,7 +3,7 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![Hassfest](https://github.com/cheikemate/aquamatrix/actions/workflows/ci.yaml/badge.svg)](https://github.com/quinzico/aquamatrix/actions/workflows/ci.yaml)
 
-A Home Assistant integration to fetch water meter readings and billing information from the AQUAmatrix SMSnet portal.
+A Home Assistant integration to fetch water meter readings and billing information from the AQUAmatrix SMASVFX portal.
 
 ## Features
 - **Meter Readings:** Tracks the last reading value and date.
@@ -16,15 +16,15 @@ A Home Assistant integration to fetch water meter readings and billing informati
 1. Open HACS in Home Assistant.
 2. Click on **Integrations**.
 3. Click the three dots in the top right and select **Custom repositories**.
-4. Paste the URL of this repository: `https://github.com/quinzico/aquamatrix` and select **Integration** as the category.
+4. Paste the URL of this repository: `https://github.com/cheikemate/aquamatrix` and select **Integration** as the category.
 5. Click **Add**.
-6. Search for **AQUAmatrix SMSnet** and click **Download**.
+6. Search for **AQUAmatrix SMASVFX** and click **Download**.
 7. Restart Home Assistant.
 
 ## Configuration
 1. Go to **Settings > Devices & Services**.
 2. Click **Add Integration**.
-3. Search for **AQUAmatrix SMSnet**.
+3. Search for **AQUAmatrix SMASVFX**.
 4. Enter your credentials:
    - **Tenant:** Your portal tenant (defaults to `SMSnet`).
    - **Username:** Your portal username.
