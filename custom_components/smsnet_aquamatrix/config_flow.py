@@ -1,4 +1,4 @@
-"""Config flow for AQUAmatrix SMSnet integration."""
+"""Config flow for AQUAmatrix SMASVFX integration."""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from homeassistant.config_entries import ConfigFlowResult
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
-from .api import SMSNetClient
+from .api import SMASVFXClient
 from .const import CONF_PASSWORD, CONF_TENANT, CONF_USERNAME, DEFAULT_BASE_URL, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     """
     session = async_get_clientsession(hass)
     tenant = data[CONF_TENANT].strip("/")
-    client = SMSNetClient(
+    client = SMASVFXClient(
         session,
         DEFAULT_BASE_URL,
         tenant,
@@ -50,8 +50,8 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     return {"title": f"AQUAmatrix ({tenant})", "tenant": tenant}
 
 
-class SMSNetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
-    """Handle a config flow for AQUAmatrix SMSnet."""
+class SMASVFXConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    """Handle a config flow for AQUAmatrix SMASVFX."""
 
     VERSION = 1
 
@@ -71,7 +71,7 @@ class SMSNetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     async def async_step_import(self, import_data: dict[str, Any]) -> ConfigFlowResult:
         """Handle import from YAML."""
-        tenant = import_data.get(CONF_TENANT, "SMSnet").strip("/")
+        tenant = import_data.get(CONF_TENANT, "SMASVFX").strip("/")
         username = import_data.get(CONF_USERNAME, "")
         await self.async_set_unique_id(f"{tenant}:{username}")
         self._abort_if_unique_id_configured()
@@ -81,13 +81,13 @@ class SMSNetConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(
         _config_entry: config_entries.ConfigEntry,
-    ) -> SMSNetOptionsFlowHandler:
+    ) -> SMASVFXOptionsFlowHandler:
         """Get the options flow for this handler."""
-        return SMSNetOptionsFlowHandler()
+        return SMASVFXOptionsFlowHandler()
 
 
-class SMSNetOptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle AQUAmatrix SMSnet options."""
+class SMASVFXOptionsFlowHandler(config_entries.OptionsFlow):
+    """Handle AQUAmatrix SMASVFX options."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Manage the options."""
