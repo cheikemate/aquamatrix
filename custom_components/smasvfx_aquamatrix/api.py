@@ -167,9 +167,7 @@ class SMASVFXClient:
             await self._refresh_page_token()
             return True
         except Exception:
-            if "inválid" in text.lower() or "incorreto" in text.lower():
-                return False
-            return True
+            return not ("inválid" in text.lower() or "incorreto" in text.lower())
 
     def _extract_cookie_token(self) -> str | None:
         """Extract the request verification token from cookies."""
@@ -248,6 +246,11 @@ class SMASVFXClient:
             except Exception as e:
                 last_exc = e
                 self._logger.debug("SMASVFX path failed %s -> %s", p, e)
+
+        # If all paths failed because of an MFA trigger or session expiry, chain it here:
+        if last_exc and "MFA" in str(last_exc):
+            raise Exception("MFA challenge triggered during runtime.") from last_exc
+
         raise last_exc or Exception("All paths failed")
 
     async def get_last_reading(self) -> Any:
