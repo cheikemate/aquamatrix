@@ -34,10 +34,10 @@ jobs:
         run: uv sync --only-group dev
 
       - name: Run Ruff linter
-        run: uv run ruff check custom_components/smsnet_aquamatrix/
+        run: uv run ruff check custom_components/smasvfx_aquamatrix/
 
       - name: Run Ruff formatter check
-        run: uv run ruff format --check custom_components/smsnet_aquamatrix/
+        run: uv run ruff format --check custom_components/smasvfx_aquamatrix/
 
   type-check:
     name: Type Check
@@ -58,7 +58,7 @@ jobs:
         run: uv sync --only-group dev
 
       - name: Run MyPy
-        run: uv run mypy custom_components/smsnet_aquamatrix/
+        run: uv run mypy custom_components/smasvfx_aquamatrix/
 
   test:
     name: Test
@@ -80,7 +80,7 @@ jobs:
 
       - name: Run tests
         run: |
-          uv run pytest tests/ -v --cov=custom_components/smsnet_aquamatrix --cov-report=term-missing
+          uv run pytest tests/ -v --cov=custom_components/smasvfx_aquamatrix --cov-report=term-missing
 
   hassfest:
     name: Home Assistant Hassfest
