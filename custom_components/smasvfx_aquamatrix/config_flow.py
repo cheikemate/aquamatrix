@@ -8,7 +8,7 @@ from typing import Any
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.config_entries import ConfigFlowResult
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import SMASVFXClient
@@ -42,7 +42,7 @@ class SMASVFXConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             self.data = user_input
             session = async_get_clientsession(self.hass)
             tenant = user_input[CONF_TENANT].strip("/")
-            
+
             self.client = SMASVFXClient(
                 session,
                 DEFAULT_BASE_URL,

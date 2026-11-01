@@ -2,12 +2,12 @@
 from __future__ import annotations
 
 from unittest.mock import patch
-import pytest
 
 from homeassistant import config_entries, data_entry_flow
 from homeassistant.core import HomeAssistant
 
 from custom_components.smsnet_aquamatrix.const import DOMAIN
+
 
 async def test_user_flow(hass: HomeAssistant, mock_smsnet_client) -> None:
     """Test the user step of the config flow."""

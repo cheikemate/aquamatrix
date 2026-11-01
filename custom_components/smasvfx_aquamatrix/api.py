@@ -88,16 +88,16 @@ class SMASVFXClient:
                 data[name] = value
                 continue
             username_candidates.append(name)
-        
+
         user_field = "UserCode" if "UserCode" in username_candidates else (username_candidates[0] if username_candidates else "Email")
         if password_name is None:
             password_name = "Password"
-            
+
         data[user_field] = self._username
         data[password_name] = self._password
         if "RememberMe" in (n for n in data) or "RememberMe" in html:
             data["RememberMe"] = "true"
-            
+
         self._logger.debug(
             "SMASVFX login form: action=%s user_field=%s pass_field=%s",
             action_url,
@@ -139,9 +139,9 @@ class SMASVFXClient:
         """Submit the email verification MFA code."""
         verify_url = self._url("Account/VerifyCode")
         headers = {"User-Agent": "HomeAssistant", "Accept-Language": "pt-PT,pt;q=0.9,en;q=0.8"}
-        
+
         resp, text = await self._fetch("GET", verify_url, headers=headers)
-        
+
         m = re.search(r'name="__RequestVerificationToken"[^>]*value="([^"]+)"', text, re.I)
         token = m.group(1) if m else (self._rvt or "")
 
@@ -159,7 +159,7 @@ class SMASVFXClient:
             "POST", verify_url, data=payload, headers=post_headers, allow_redirects=True
         )
         self._logger.debug("SMASVFX verify_mfa post status=%s final_url=%s", resp.status, resp.url)
-        
+
         if resp.status >= 400:
             return False
 

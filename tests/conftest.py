@@ -2,7 +2,9 @@
 from __future__ import annotations
 
 from unittest.mock import patch
+
 import pytest
+
 
 @pytest.fixture(autouse=True)
 def auto_enable_custom_integrations(hass):
