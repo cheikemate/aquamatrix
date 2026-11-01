@@ -5,6 +5,9 @@
 
 A Home Assistant integration to fetch water meter readings and billing information from the AQUAmatrix SMASVFX portal.
 
+<img width="1351" height="716" alt="image" src="https://github.com/user-attachments/assets/0bf76f03-8901-4213-bf4a-1690d3cd5fce" />
+
+
 ## Features
 - **Meter Readings:** Tracks the last reading value and date.
 - **Consumption:** Tracks current and previous month consumption.
