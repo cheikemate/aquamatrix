@@ -234,7 +234,9 @@ class SMASVFXClient:
             except Exception:
                 login_result = await self.login()
                 if login_result == "mfa_required":
-                    raise Exception("MFA challenge triggered during runtime. Re-authentication requires a verification code.")
+                    raise Exception(
+                        "MFA challenge triggered during runtime. Re-authentication requires a verification code."
+                    ) from e1
                 return await self._get_json_once(path, referer_path, pair_tokens=True)
 
     async def _try_paths(self, paths: list[str], referer_path: str) -> Any:

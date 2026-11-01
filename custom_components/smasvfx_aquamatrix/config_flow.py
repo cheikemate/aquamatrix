@@ -73,6 +73,7 @@ class SMASVFXConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None:
             code = user_input["verification_code"]
+            assert self.client is not None  # Satisfies Mypy type check
             try:
                 success = await self.client.verify_mfa(code)
                 if success:
